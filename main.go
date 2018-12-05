@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/iancoleman/strcase"
@@ -110,18 +111,11 @@ func main() {
 			}
 			arg.Types = append(arg.Types, &req)
 
-			// Count the number of non-default responses. If there is one, the naming is easier.
-			var totalResponses int
-			for respName, _ := range op.Responses {
-				if respName != "default" {
-					totalResponses++
-				}
-			}
-
-			// For each response, build a reponse definition and a http handler.
+			// Take the first response that isn't "default" and is a 2xx.
+			// TODO: This needs much improvement.
 			for respName, response := range op.Responses {
 				handler := handler
-				if respName == "default" {
+				if respName == "default" || !strings.HasPrefix(respName, "2") {
 					// Don't build the "default" response as this is usually and error.
 					// May not be the correct assumption.
 					continue
@@ -131,19 +125,16 @@ func main() {
 				if body := response.Value.Content.Get("application/json"); body != nil {
 					resp = schemaRefParse(body.Schema, "")
 				}
-				var name string
-				if totalResponses == 1 {
-					name = op.OperationID
-				} else {
-					name = op.OperationID + respName
-				}
 
+				name := op.OperationID
 				resp.Name = strcase.ToCamel(name + "Response")
 				handler.Name = strcase.ToCamel(name)
 				handler.Response = resp.Name
 
 				arg.Types = append(arg.Types, &resp)
 				arg.Handlers = append(arg.Handlers, &handler)
+
+				break
 			}
 		}
 	}
