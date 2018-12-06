@@ -175,6 +175,9 @@ func schemaRefParse(oasSchema *openapi3.SchemaRef, name string) templates.Defini
 		for propName, prop := range oasSchema.Value.Properties {
 			p := schemaRefParse(prop, strcase.ToCamel(propName))
 			p.Tag = fmt.Sprintf("`json:\"%s\"`", propName)
+			if p.TypeStr == "" {
+				p.TypeStr = p.Name
+			}
 			schema.Properties = append(schema.Properties, p)
 		}
 	} else if oasSchema.Value.Items != nil {
