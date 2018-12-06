@@ -69,12 +69,13 @@ func main() {
 	sort.Sort(arg.Types)
 
 	// Build all the types for paths
+	var reqResp templates.DefinitionList
 	for path, pathItem := range swagger.Paths {
 		for method, op := range pathItem.Operations() {
 			req := templates.Definition{
 				Name: strcase.ToCamel(op.OperationID + "Request"),
 				// Embed the the httprequest.Route type
-				Properties: []templates.Definition{{
+				Properties: templates.DefinitionList{{
 					Tag:     fmt.Sprintf("`httprequest:\"%s %s\"`", method, oas.PathToString(path)),
 					TypeStr: "httprequest.Route",
 				}},
@@ -93,7 +94,7 @@ func main() {
 					TypeStr: def.TypeStr,
 				}
 
-				req.Properties = append(req.Properties, p)
+				req.Properties = append(req.Properties, &p)
 			}
 
 			// Get request body
@@ -106,10 +107,10 @@ func main() {
 						TypeStr: def.Name,
 					}
 
-					req.Properties = append(req.Properties, p)
+					req.Properties = append(req.Properties, &p)
 				}
 			}
-			arg.Types = append(arg.Types, &req)
+			reqResp = append(reqResp, &req)
 
 			// Take the first response that isn't "default" and is a 2xx.
 			// TODO: This needs much improvement.
@@ -131,13 +132,16 @@ func main() {
 				handler.Name = strcase.ToCamel(name)
 				handler.Response = resp.Name
 
-				arg.Types = append(arg.Types, &resp)
+				reqResp = append(reqResp, &resp)
 				arg.Handlers = append(arg.Handlers, &handler)
 
 				break
 			}
 		}
 	}
+
+	sort.Sort(reqResp)
+	arg.Types = append(arg.Types, reqResp...)
 
 	err = templates.WriteAll(*outputDir, arg)
 	if err != nil {
@@ -178,8 +182,9 @@ func schemaRefParse(oasSchema *openapi3.SchemaRef, name string) templates.Defini
 			if p.TypeStr == "" {
 				p.TypeStr = p.Name
 			}
-			schema.Properties = append(schema.Properties, p)
+			schema.Properties = append(schema.Properties, &p)
 		}
+		sort.Sort(schema.Properties)
 	} else if oasSchema.Value.Items != nil {
 		t := schemaRefParse(oasSchema.Value.Items, oas.TypeString(oasSchema.Value.Items.Value.Type, oasSchema.Value.Items.Value.Format))
 		schema.TypeStr = fmt.Sprintf("[]%s", t.Name)

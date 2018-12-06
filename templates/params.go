@@ -4,10 +4,10 @@ import "text/template"
 
 // Definition defines a type definition to be written to params.go
 type Definition struct {
-  Name       string
-  TypeStr    string
-  Tag        string
-  Properties []Definition
+	Name       string
+	TypeStr    string
+	Tag        string
+	Properties DefinitionList
 }
 
 type DefinitionList []*Definition
