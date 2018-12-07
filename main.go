@@ -146,6 +146,8 @@ func main() {
 	sort.Sort(reqResp)
 	arg.Types = append(arg.Types, reqResp...)
 
+	sort.Sort(arg.Handlers)
+
 	err = templates.WriteAll(*outputDir, arg)
 	if err != nil {
 		log.Fatal(err)
