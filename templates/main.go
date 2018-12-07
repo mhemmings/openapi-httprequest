@@ -18,9 +18,10 @@ import (
 )
 
 func main() {
-  f := func(p httprequest.Params) (Handler, context.Context, error) {
+  // TODO This should use the interface APIHandler
+  f := func(p httprequest.Params) (*Handler, context.Context, error) {
     log.Printf("%s %s\n", p.Request.Method, p.Request.URL)
-    return Handler{}, p.Context, nil
+    return &Handler{}, p.Context, nil
   }
 
   router := httprouter.New()

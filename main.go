@@ -36,6 +36,7 @@ func main() {
 	outputDir := gnuflag.String("outputdir", "output/", "The output directory to save generated server package")
 	serve := gnuflag.Bool("serve", false, "If set, the generated server will be run after generation")
 	port := gnuflag.Int("port", 8080, "Used with '--serve'. The port to run the server on")
+	noServer := gnuflag.Bool("no-server", false, "Only generate interfaces and paramas")
 
 	gnuflag.Parse(true)
 	if gnuflag.NArg() != 1 || gnuflag.Arg(0) == "help" {
@@ -49,7 +50,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var arg templates.TemplateArg
+	arg := templates.TemplateArg{
+		GenerateServerCode: !*noServer,
+	}
 
 	// Build references of top level schema definitions
 	for schemaName, schema := range swagger.Components.Schemas {
@@ -150,7 +153,7 @@ func main() {
 
 	fmt.Println("Server package saved in:", *outputDir)
 
-	if *serve {
+	if !*noServer && *serve {
 		fmt.Printf("Running API server on port %d\n", *port)
 		cmd := exec.Command("go", "run", "./"+filepath.Join(*outputDir, "..."))
 		cmd.Stdout = os.Stdout

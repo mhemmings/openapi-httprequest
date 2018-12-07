@@ -4,9 +4,9 @@ import "text/template"
 
 // Handler defines a httprequest handler function to be written to handlers.go
 type Handler struct {
-  Name     string
-  Request  string
-  Response string
+	Name     string
+	Request  string
+	Response string
 }
 
 type HandlerList []*Handler
@@ -19,11 +19,18 @@ var Handlers = template.Must(template.New("").Parse(`
 // The code in this file was automatically generated.
 package main
 
+type APIHandler interface {
+	{{- range .Handlers -}}
+	{{.Name}}(*{{.Request}}) (*{{.Response}}, error)
+	{{end}}
+}
+{{if .GenerateServerCode}}
 type Handler struct {
 }
 {{range .Handlers}}
-func (Handler) {{.Name}}(req *{{.Request}}) ({{.Response}}, error) {
+func (h *Handler) {{.Name}}(req *{{.Request}}) (*{{.Response}}, error) {
   resp := {{.Response}}{}
-  return resp, nil
+  return &resp, nil
 }
+{{end}}
 {{end}}`))
