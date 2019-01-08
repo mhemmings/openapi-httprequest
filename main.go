@@ -75,6 +75,10 @@ func main() {
 	var reqResp templates.DefinitionList
 	for path, pathItem := range swagger.Paths {
 		for method, op := range pathItem.Operations() {
+			if method == "HEAD" || method == "OPTIONS" {
+				// Ignore (https://github.com/go-httprequest/httprequest/blob/2b21a94c9e788981d4e609ef4b7a21cedae6da66/type.go#L225)
+				continue
+			}
 			req := templates.Definition{
 				Name: strcase.ToCamel(op.OperationID + "Request"),
 				// Embed the the httprequest.Route type
