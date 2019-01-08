@@ -108,13 +108,15 @@ func main() {
 			if op.RequestBody != nil && op.RequestBody.Value.Content["application/json"] != nil {
 				if schema := op.RequestBody.Value.Content["application/json"].Schema; schema != nil {
 					def := schemaRefParse(schema, "Body")
-					p := templates.Definition{
-						Name:    def.Name,
-						Tag:     "`httprequest:\",body\"`",
-						TypeStr: def.Name,
-					}
+					if def.Name != "Body" {
+						p := templates.Definition{
+							Name:    def.Name,
+							Tag:     "`httprequest:\",body\"`",
+							TypeStr: def.Name,
+						}
 
-					req.Properties = append(req.Properties, &p)
+						req.Properties = append(req.Properties, &p)
+					}
 				}
 			}
 			reqResp = append(reqResp, &req)
