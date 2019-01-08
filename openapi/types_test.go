@@ -58,7 +58,7 @@ var typesTestTable = []struct {
 	Expected: "bool",
 }, {
 	Type:     "unknown",
-	Expected: "unknown",
+	Expected: "interface{}",
 }}
 
 func TestOpenapiTypeToGo(t *testing.T) {

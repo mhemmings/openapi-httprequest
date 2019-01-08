@@ -17,6 +17,7 @@ func TypeString(typ string, format string) string {
 		return "string"
 	case "boolean":
 		return "bool"
+	default:
+		return "interface{}"
 	}
-	return typ
 }
