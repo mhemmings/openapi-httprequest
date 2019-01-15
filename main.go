@@ -38,23 +38,28 @@ var (
 )
 
 func main() {
+	os.Exit(main1())
+}
+
+func main1() int {
 	gnuflag.Usage = func() {
 		printCmdUsage()
-		os.Exit(2)
 	}
 	log.SetFlags(0)
 
 	gnuflag.Parse(true)
 	if gnuflag.NArg() != 1 || gnuflag.Arg(0) == "help" {
 		gnuflag.Usage()
+		return 2
 	}
-	if err := main1(); err != nil {
-		log.Printf("error details: %v", errgo.Details(err))
-		log.Fatal(err)
+	if err := main2(); err != nil {
+		log.Printf("%v", err)
+		return 1
 	}
+	return 0
 }
 
-func main1() error {
+func main2() error {
 	if *outputDir == "" {
 		if *listenAddr != "" {
 			dir, err := ioutil.TempDir("", "")
@@ -153,27 +158,29 @@ func main1() error {
 
 			// Take the first response that isn't "default" and is a 2xx.
 			// TODO: This needs much improvement.
+			// TODO: Error if there's more than one 2xx response?
 			for respName, response := range op.Responses {
 				handler := handler
 				if respName == "default" || !strings.HasPrefix(respName, "2") {
-					// Don't build the "default" response as this is usually and error.
+					// Don't build the "default" response as this is usually an error.
 					// May not be the correct assumption.
 					continue
 				}
 
-				var resp templates.Definition
-				if body := response.Value.Content.Get("application/json"); body != nil {
-					resp = schemaRefParse(body.Schema, "")
-				}
-
 				name := op.OperationID
-				resp.Name = strcase.ToCamel(name + "Response")
+				var resp templates.Definition
+				// If there's only one possible content type and it's JSON, then
+				// we can use the httprequest method return type; otherwise
+				// we'll leave the response empty and leave it up to the server
+				// method to write the appropriate response.
+				if len(response.Value.Content) == 1 {
+					if body := response.Value.Content.Get("application/json"); body != nil {
+						resp = schemaRefParse(body.Schema, "")
+						handler.Response = resp.Name
+					}
+				}
 				handler.Name = strcase.ToCamel(name)
-				handler.Response = resp.Name
-
-				reqResp = append(reqResp, &resp)
 				arg.Handlers = append(arg.Handlers, &handler)
-
 				break
 			}
 		}
