@@ -31,9 +31,8 @@ var printCmdUsage = func() {
 }
 
 var (
-	outputDir      = gnuflag.String("outputdir", "", "The output directory to save generated server package (default: the current directory, or a temporary directory if --server is specified")
-	serve          = gnuflag.Bool("serve", false, "If set, the generated server will be run after generation; implies --server")
-	listenAddr     = gnuflag.String("http", "", "Implies --server. If set, the generated server will be run after generation on the given network address")
+	outputDir      = gnuflag.String("outputdir", "", "The output directory to save generated server package (default: the current directory, or a temporary directory if --http is specified")
+	listenAddr     = gnuflag.String("http", "", "Implies --server. If set, the generated server will be run on the given network address (e.g. localhost:8088)")
 	packageName    = gnuflag.String("pkg", "params", "Package name to use for generated files (ignored if --server is specified)")
 	generateServer = gnuflag.Bool("server", false, "Generate server code (overwrites --pkg=main)")
 )
@@ -56,14 +55,12 @@ func main() {
 }
 
 func main1() error {
-	isTemp := false
 	if *outputDir == "" {
-		if *serve {
+		if *listenAddr != "" {
 			dir, err := ioutil.TempDir("", "")
 			if err != nil {
 				return err
 			}
-			isTemp = true
 			defer os.RemoveAll(dir)
 			*outputDir = dir
 		} else {
@@ -190,10 +187,6 @@ func main1() error {
 	err = templates.WriteAll(*outputDir, arg)
 	if err != nil {
 		return errgo.Notef(err, "cannot write templates")
-	}
-
-	if !isTemp {
-		fmt.Println("Server package saved in:", *outputDir)
 	}
 
 	if *listenAddr != "" {
