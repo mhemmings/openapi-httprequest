@@ -18,7 +18,7 @@ require (
 	github.com/stretchr/testify v1.2.2 // indirect
 	golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85 // indirect
 	golang.org/x/net v0.0.0-20181129055619-fae4c4e3ad76 // indirect
-	gopkg.in/errgo.v1 v1.0.0 // indirect
+	gopkg.in/errgo.v1 v1.0.0
 	gopkg.in/httprequest.v1 v1.1.2
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce // indirect
 	gopkg.in/yaml.v2 v2.2.1 // indirect

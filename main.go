@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -14,6 +15,7 @@ import (
 	"github.com/juju/gnuflag"
 	oas "github.com/mhemmings/openapi-httprequest/openapi"
 	"github.com/mhemmings/openapi-httprequest/templates"
+	errgo "gopkg.in/errgo.v1"
 )
 
 type ref struct {
@@ -28,30 +30,61 @@ var printCmdUsage = func() {
 	gnuflag.PrintDefaults()
 }
 
+var (
+	outputDir      = gnuflag.String("outputdir", "", "The output directory to save generated server package (default: the current directory, or a temporary directory if --server is specified")
+	serve          = gnuflag.Bool("serve", false, "If set, the generated server will be run after generation; implies --server")
+	listenAddr     = gnuflag.String("http", "", "Implies --server. If set, the generated server will be run after generation on the given network address")
+	packageName    = gnuflag.String("pkg", "params", "Package name to use for generated files (ignored if --server is specified)")
+	generateServer = gnuflag.Bool("server", false, "Generate server code (overwrites --pkg=main)")
+)
+
 func main() {
 	gnuflag.Usage = func() {
 		printCmdUsage()
 		os.Exit(2)
 	}
-	outputDir := gnuflag.String("outputdir", "output/", "The output directory to save generated server package")
-	serve := gnuflag.Bool("serve", false, "If set, the generated server will be run after generation")
-	port := gnuflag.Int("port", 8080, "Used with '--serve'. The port to run the server on")
-	noServer := gnuflag.Bool("no-server", false, "Only generate interfaces and paramas")
+	log.SetFlags(0)
 
 	gnuflag.Parse(true)
 	if gnuflag.NArg() != 1 || gnuflag.Arg(0) == "help" {
 		gnuflag.Usage()
 	}
+	if err := main1(); err != nil {
+		log.Printf("error details: %v", errgo.Details(err))
+		log.Fatal(err)
+	}
+}
 
+func main1() error {
+	isTemp := false
+	if *outputDir == "" {
+		if *serve {
+			dir, err := ioutil.TempDir("", "")
+			if err != nil {
+				return err
+			}
+			isTemp = true
+			defer os.RemoveAll(dir)
+			*outputDir = dir
+		} else {
+			*outputDir = "."
+		}
+	}
+	if *listenAddr != "" {
+		*generateServer = true
+	}
+	if *generateServer {
+		*packageName = "main"
+	}
 	uri := gnuflag.Arg(0)
-
 	swagger, err := oas.Load(uri)
 	if err != nil {
-		log.Fatal(err)
+		return errgo.Mask(err)
 	}
 
 	arg := templates.TemplateArg{
-		GenerateServerCode: !*noServer,
+		GenerateServer: *generateServer,
+		Pkg:            *packageName,
 	}
 
 	// Build references of top level schema definitions
@@ -156,22 +189,33 @@ func main() {
 
 	err = templates.WriteAll(*outputDir, arg)
 	if err != nil {
-		log.Fatal(err)
+		return errgo.Notef(err, "cannot write templates")
 	}
 
-	fmt.Println("Server package saved in:", *outputDir)
+	if !isTemp {
+		fmt.Println("Server package saved in:", *outputDir)
+	}
 
-	if !*noServer && *serve {
-		fmt.Printf("Running API server on port %d\n", *port)
-		cmd := exec.Command("go", "run", "./"+filepath.Join(*outputDir, "..."))
+	if *listenAddr != "" {
+		fmt.Printf("Running API server at %s\n", *listenAddr)
+		cmd := exec.Command("go", "build", "-o", "openapi-httprequest-server")
+		cmd.Dir = *outputDir
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Env = os.Environ()
-		cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", *port))
 		if err := cmd.Run(); err != nil {
-			fmt.Println(err)
+			return errgo.Mask(err)
+		}
+		cmd = exec.Command(filepath.Join(*outputDir, "openapi-httprequest-server"))
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Env = os.Environ()
+		cmd.Env = append(cmd.Env, fmt.Sprintf("LISTEN_ADDR=%s", *listenAddr))
+		if err := cmd.Run(); err != nil {
+			return errgo.Mask(err)
 		}
 	}
+	return nil
 }
 
 // schemaRefParse takes an openapi SchemeRef doc and creates a type Definition to be used in params.go.
