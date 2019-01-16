@@ -3,15 +3,20 @@ package templates
 import (
 	"bytes"
 	"go/format"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
+
+	errgo "gopkg.in/errgo.v1"
 )
 
 type TemplateArg struct {
-	Types              DefinitionList
-	Handlers           HandlerList
-	GenerateServerCode bool
+	Pkg            string
+	Types          DefinitionList
+	Handlers       HandlerList
+	GenerateServer bool
 }
 
 // WriteAll writes the generated packed to the provided outputDir
@@ -19,20 +24,21 @@ func WriteAll(outputDir string, args TemplateArg) error {
 	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
 		os.Mkdir(outputDir, os.ModePerm)
 	}
-	err := Write(Params, args, filepath.Join(outputDir, "params.go"))
+	err := Write(Params, args, filepath.Join(outputDir, "api-params.go"))
 	if err != nil {
-		return err
+		return errgo.Notef(err, "cannot write api-params.go template")
 	}
-
-	err = Write(Handlers, args, filepath.Join(outputDir, "handlers.go"))
-	if err != nil {
-		return err
+	if args.GenerateServer {
+		err := Write(Main, args, filepath.Join(outputDir, "main.go"))
+		if err != nil {
+			return errgo.Notef(err, "cannot write main.go template")
+		}
+		err = Write(GoMod, args, filepath.Join(outputDir, "go.mod"))
+		if err != nil {
+			return errgo.Notef(err, "cannot write go.mod template")
+		}
 	}
-
-	if args.GenerateServerCode {
-		err = Write(Main, args, filepath.Join(outputDir, "main.go"))
-	}
-	return err
+	return nil
 }
 
 func Write(template *template.Template, data TemplateArg, filepath string) error {
@@ -58,19 +64,18 @@ Outer:
 
 	var buf bytes.Buffer
 	if err := template.Execute(&buf, args); err != nil {
-		return err
+		return errgo.Mask(err)
 	}
 
-	source, err := format.Source(buf.Bytes())
-	if err != nil {
-		return err
+	outputData := buf.Bytes()
+	if strings.HasSuffix(filepath, ".go") {
+		data, err := format.Source(outputData)
+		if err != nil {
+			return errgo.Notef(err, "invalid Go source output")
+		}
+		outputData = data
 	}
 
-	dst, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer dst.Close()
-	_, err = dst.Write(source)
-	return err
+	err := ioutil.WriteFile(filepath, outputData, 0666)
+	return errgo.Mask(err)
 }
