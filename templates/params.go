@@ -42,7 +42,7 @@ import(
 
 type APIHandler interface {
 	{{- range .Handlers -}}
-	{{.Name}}(*{{.Request}}) (*{{.Response}}, error)
+	{{.Name}}(httprequest.Params, *{{.Request}}) ({{if .Response}}*{{.Response}}, {{end}}error)
 	{{end}}
 }
 
