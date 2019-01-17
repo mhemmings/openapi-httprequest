@@ -176,6 +176,12 @@ func main2() error {
 				if len(response.Value.Content) == 1 {
 					if body := response.Value.Content.Get("application/json"); body != nil {
 						resp = schemaRefParse(body.Schema, "")
+						// If the response is not a referenced type and is instead defined inline,
+						// we need to build the response type.
+						if resp.Name == "" {
+							resp.Name = strcase.ToCamel(name + "Response")
+							reqResp = append(reqResp, &resp)
+						}
 						handler.Response = resp.Name
 					}
 				}
