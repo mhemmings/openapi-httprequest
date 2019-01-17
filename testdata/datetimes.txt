@@ -1,4 +1,4 @@
-# Tests a basic OpenAPI path
+# Tests that the OpenAPI date-time type is converted to time.Time
 
 openapi-httprequest api.yaml
 cmp api-params.go expect-api-params.go
@@ -25,9 +25,10 @@ components:
   schemas:
     GetTestDataResponse:
       properties:
-        body:
-          description: get test data response body
+        timestamp:
           type: string
+          format: date-time
+          description: RFC3339 time
       type: object
 
 -- expect-api-params.go --
@@ -36,6 +37,8 @@ components:
 package params
 
 import (
+	"time"
+
 	httprequest "gopkg.in/httprequest.v1"
 )
 
@@ -44,7 +47,7 @@ type APIHandler interface {
 }
 
 type GetTestDataResponse struct {
-	Body string `json:"body"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 type GetTestDataRequest struct {

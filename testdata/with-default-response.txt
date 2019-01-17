@@ -1,4 +1,4 @@
-# Tests a basic OpenAPI path
+# Tests a route with a default response defined
 
 openapi-httprequest api.yaml
 cmp api-params.go expect-api-params.go
@@ -20,6 +20,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetTestDataResponse'
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultResponse'
       summary: Get test data
 components:
   schemas:
@@ -27,6 +32,12 @@ components:
       properties:
         body:
           description: get test data response body
+          type: string
+      type: object
+    DefaultResponse:
+      properties:
+        body:
+          description: default response body
           type: string
       type: object
 
@@ -41,6 +52,10 @@ import (
 
 type APIHandler interface {
 	GetTestData(httprequest.Params, *GetTestDataRequest) (*GetTestDataResponse, error)
+}
+
+type DefaultResponse struct {
+	Body string `json:"body"`
 }
 
 type GetTestDataResponse struct {
