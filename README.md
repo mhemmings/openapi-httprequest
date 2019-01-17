@@ -1,4 +1,4 @@
-# openapi-httprequest
+# openapi-httprequest [![Build Status](https://travis-ci.org/mhemmings/openapi-httprequest.svg?branch=master)](https://travis-ci.org/mhemmings/openapi-httprequest)
 
 Tooling to support use of [httprequest](https://github.com/go-httprequest/httprequest) with OpenAPI specifications.
 
