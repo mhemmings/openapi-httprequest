@@ -1,3 +1,5 @@
+# Tests that the server can be built
+
 [!exec:go] skip
 
 mkdir server
