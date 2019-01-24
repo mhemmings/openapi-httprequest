@@ -229,7 +229,10 @@ func main2() error {
 func schemaRefParse(oasSchema *openapi3.SchemaRef, name string) templates.Definition {
 	if oasSchema.Ref != "" {
 		r := references[oasSchema.Ref]
-		return schemaRefParse(r.SchemaRef, r.Name)
+		if name == "" {
+			name = r.Name
+		}
+		return schemaRefParse(r.SchemaRef, name)
 	}
 
 	schema := templates.Definition{
