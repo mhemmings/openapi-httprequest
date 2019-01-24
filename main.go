@@ -143,15 +143,21 @@ func main2() error {
 			if op.RequestBody != nil && op.RequestBody.Value.Content["application/json"] != nil {
 				if schema := op.RequestBody.Value.Content["application/json"].Schema; schema != nil {
 					def := schemaRefParse(schema, "Body")
-					if def.Name != "Body" {
-						p := templates.Definition{
-							Name:    def.Name,
-							Tag:     "`httprequest:\",body\"`",
-							TypeStr: def.Name,
-						}
-
-						req.Properties = append(req.Properties, &p)
+					p := templates.Definition{
+						Name:    def.Name,
+						Tag:     "`httprequest:\",body\"`",
+						TypeStr: def.Name,
 					}
+					if def.Name == "Body" {
+						// If the request body is not a referenced type and is instead defined inline,
+						// we need to build the request type
+						reqBody := def
+						reqBody.Name = strcase.ToCamel(op.OperationID + "RequestBody")
+						p.TypeStr = reqBody.Name
+						reqResp = append(reqResp, &reqBody)
+					}
+
+					req.Properties = append(req.Properties, &p)
 				}
 			}
 			reqResp = append(reqResp, &req)
