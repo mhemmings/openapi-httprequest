@@ -68,5 +68,5 @@ type PostResponse struct {
 
 type PostTestDataRequest struct {
 	httprequest.Route `httprequest:"POST /test"`
-	PostRequest       PostRequest `httprequest:",body"`
+	Body              PostRequest `httprequest:",body"`
 }
