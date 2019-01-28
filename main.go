@@ -142,13 +142,13 @@ func main2() error {
 			// Get request body
 			if op.RequestBody != nil && op.RequestBody.Value.Content["application/json"] != nil {
 				if schema := op.RequestBody.Value.Content["application/json"].Schema; schema != nil {
-					def := schemaRefParse(schema, "Body")
+					def := schemaRefParse(schema, "")
 					p := templates.Definition{
-						Name:    def.Name,
+						Name:    "Body",
 						Tag:     "`httprequest:\",body\"`",
 						TypeStr: def.Name,
 					}
-					if def.Name == "Body" {
+					if def.Name == "" {
 						// If the request body is not a referenced type and is instead defined inline,
 						// we need to build the request type
 						reqBody := def
