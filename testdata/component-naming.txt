@@ -16,7 +16,6 @@ components:
       type: string
       description: |-
         A code representing the kind of error.
-        TODO enumerate all the possible error codes here?
     Error:
       type: object
       properties:
@@ -39,4 +38,5 @@ type Error struct {
 	Code ErrorCode `json:"code"`
 }
 
+// A code representing the kind of error.
 type ErrorCode string

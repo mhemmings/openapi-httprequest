@@ -70,28 +70,44 @@ import (
 )
 
 type APIHandler interface {
+	// Delete test data
 	DeleteTestData(httprequest.Params, *DeleteTestDataRequest) (*GetTestDataResponse, error)
+
+	// Get test data
 	GetTestData(httprequest.Params, *GetTestDataRequest) (*GetTestDataResponse, error)
+
+	// Post test data
 	PostTestData(httprequest.Params, *PostTestDataRequest) (*GetTestDataResponse, error)
+
+	// Put test data
 	PutTestData(httprequest.Params, *PutTestDataRequest) (*GetTestDataResponse, error)
 }
 
 type GetTestDataResponse struct {
+	// get test data response body
 	Body string `json:"body"`
 }
 
+// DeleteTestDataRequest holds the request value for a DeleteTestData call.
+// Delete test data (description)
 type DeleteTestDataRequest struct {
 	httprequest.Route `httprequest:"DELETE /test"`
 }
 
+// GetTestDataRequest holds the request value for a GetTestData call.
+// Get test data (description)
 type GetTestDataRequest struct {
 	httprequest.Route `httprequest:"GET /test"`
 }
 
+// PostTestDataRequest holds the request value for a PostTestData call.
+// Post test data (description)
 type PostTestDataRequest struct {
 	httprequest.Route `httprequest:"POST /test"`
 }
 
+// PutTestDataRequest holds the request value for a PutTestData call.
+// Put test data (description)
 type PutTestDataRequest struct {
 	httprequest.Route `httprequest:"PUT /test"`
 }

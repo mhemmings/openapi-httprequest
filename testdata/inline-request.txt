@@ -29,7 +29,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PostResponse'
-      summary: Get test data
+      summary: Post test data
 components:
   schemas:
     PostResponse:
@@ -49,18 +49,23 @@ import (
 )
 
 type APIHandler interface {
+	// Post test data
 	PostTestData(httprequest.Params, *PostTestDataRequest) (*PostResponse, error)
 }
 
 type PostResponse struct {
+	// post test data response body
 	Body string `json:"body"`
 }
 
+// PostTestDataRequest holds the request value for a PostTestData call.
+// Post test data (description)
 type PostTestDataRequest struct {
 	httprequest.Route `httprequest:"POST /test"`
 	Body              PostTestDataRequestBody `httprequest:",body"`
 }
 
 type PostTestDataRequestBody struct {
+	// A test string
 	Test string `json:"test"`
 }

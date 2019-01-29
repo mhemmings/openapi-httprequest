@@ -79,3 +79,12 @@ Outer:
 	err := ioutil.WriteFile(filepath, outputData, 0666)
 	return errgo.Mask(err)
 }
+
+// Comment takes a string and turns it into a golang comment using "//", while preserving new lines.
+func Comment(str string) string {
+	str = strings.TrimSpace(str)
+	if str == "" {
+		return ""
+	}
+	return "// " + strings.Replace(str, "\n", "\n// ", -1)
+}

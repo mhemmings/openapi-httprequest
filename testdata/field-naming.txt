@@ -60,9 +60,11 @@ type OS struct {
 	X string `json:"x"`
 }
 
+// FooRequest holds the request value for a Foo call.
 type FooRequest struct {
 	httprequest.Route `httprequest:"POST /somewhere"`
 	Body              FooBody `httprequest:",body"`
 }
 
+// FooResponse holds the response to a Foo call.
 type FooResponse interface{}
