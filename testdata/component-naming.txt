@@ -36,7 +36,7 @@ type APIHandler interface {
 }
 
 type Error struct {
-	Code string `json:"code"`
+	Code ErrorCode `json:"code"`
 }
 
 type ErrorCode string

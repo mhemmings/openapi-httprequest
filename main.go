@@ -238,7 +238,9 @@ func schemaRefParse(oasSchema *openapi3.SchemaRef, name string) templates.Defini
 		if name == "" {
 			name = r.Name
 		}
-		return schemaRefParse(r.SchemaRef, name)
+		def := schemaRefParse(r.SchemaRef, name)
+		def.TypeStr = r.Name
+		return def
 	}
 
 	schema := templates.Definition{
