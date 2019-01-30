@@ -29,9 +29,12 @@ import (
 )
 
 type APIHandler interface {
+	// Delete test data
 	DeleteTestData(httprequest.Params, *DeleteTestDataRequest) error
 }
 
+// DeleteTestDataRequest holds the request value for a DeleteTestData call.
+// Delete test data (description)
 type DeleteTestDataRequest struct {
 	httprequest.Route `httprequest:"DELETE /test"`
 }

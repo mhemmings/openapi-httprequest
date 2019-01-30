@@ -43,13 +43,17 @@ import (
 )
 
 type APIHandler interface {
+	// Get test data
 	GetTestData(httprequest.Params, *GetTestDataRequest) (*GetTestDataResponse, error)
 }
 
 type GetTestDataResponse struct {
+	// RFC3339 time
 	Timestamp time.Time `json:"timestamp"`
 }
 
+// GetTestDataRequest holds the request value for a GetTestData call.
+// Get test data (description)
 type GetTestDataRequest struct {
 	httprequest.Route `httprequest:"GET /test"`
 }

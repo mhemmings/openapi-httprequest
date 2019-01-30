@@ -7,6 +7,7 @@ type Definition struct {
 	Name       string
 	TypeStr    string
 	Tag        string
+	DocComment string
 	Properties DefinitionList
 }
 
@@ -24,9 +25,10 @@ func (s HandlerList) Less(i, j int) bool { return s[i].Name < s[j].Name }
 
 // Handler defines a httprequest handler function to be written to handlers.go
 type Handler struct {
-	Name     string
-	Request  string
-	Response string
+	Name       string
+	DocComment string
+	Request    string
+	Response   string
 }
 
 var Params = template.Must(template.New("").Parse(`
@@ -41,14 +43,18 @@ import(
 )
 
 type APIHandler interface {
-	{{- range .Handlers -}}
+	{{- range .Handlers }}
+	{{ if .DocComment}}{{.DocComment}}{{end}}
 	{{.Name}}(httprequest.Params, *{{.Request}}) ({{if .Response}}*{{.Response}}, {{end}}error)
 	{{end}}
 }
 
 {{range .Types}}
+{{- if .DocComment}}{{.DocComment}}{{end}}
 type {{.Name}} {{if .TypeStr}}{{.TypeStr}}{{else}}struct {
   {{range .Properties}}
+  {{- if .DocComment}}{{.DocComment}}
+  {{end}}
   {{- .Name}} {{.TypeStr}} {{.Tag}}
   {{end}}
 }{{end}}

@@ -114,13 +114,20 @@ func main2() error {
 				// Ignore (https://github.com/go-httprequest/httprequest/blob/2b21a94c9e788981d4e609ef4b7a21cedae6da66/type.go#L225)
 				continue
 			}
+			name := strcase.ToCamel(op.OperationID + "Request")
 			req := templates.Definition{
-				Name: strcase.ToCamel(op.OperationID + "Request"),
+				Name:       name,
+				DocComment: templates.Comment(fmt.Sprintf("%s holds the request value for a %s call.", name, op.OperationID)),
 				// Embed the the httprequest.Route type
 				Properties: templates.DefinitionList{{
 					Tag:     fmt.Sprintf("`httprequest:\"%s %s\"`", method, oas.PathToString(path)),
 					TypeStr: "httprequest.Route",
 				}},
+			}
+
+			if op.Description != "" {
+				// If this request has a description, also include it in the comment.
+				req.DocComment = req.DocComment + "\n" + templates.Comment(op.Description)
 			}
 
 			handler := templates.Handler{
@@ -186,12 +193,14 @@ func main2() error {
 						// we need to build the response type.
 						if resp.Name == "" {
 							resp.Name = strcase.ToCamel(name + "Response")
+							resp.DocComment = templates.Comment(fmt.Sprintf("%s holds the response to a %s call.", resp.Name, name))
 							reqResp = append(reqResp, &resp)
 						}
 						handler.Response = resp.Name
 					}
 				}
 				handler.Name = strcase.ToCamel(name)
+				handler.DocComment = templates.Comment(op.Summary)
 				arg.Handlers = append(arg.Handlers, &handler)
 				break
 			}
@@ -240,11 +249,13 @@ func schemaRefParse(oasSchema *openapi3.SchemaRef, name string) templates.Defini
 		}
 		def := schemaRefParse(r.SchemaRef, name)
 		def.TypeStr = r.Name
+		def.DocComment = "" // Avoid duplication of comments due to references.
 		return def
 	}
 
 	schema := templates.Definition{
-		Name: name,
+		Name:       name,
+		DocComment: templates.Comment(oasSchema.Value.Description),
 	}
 
 	if len(oasSchema.Value.Properties) > 0 {
