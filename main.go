@@ -244,7 +244,8 @@ func main2() error {
 func schemaRefParse(oasSchema *openapi3.SchemaRef, name string) templates.Definition {
 	if oasSchema.Ref != "" {
 		r := references[oasSchema.Ref]
-		if name == "" {
+		// If the definition name is currently unknown, set it to the resolved one.
+		if name == "" || name == "interface{}" {
 			name = r.Name
 		}
 		def := schemaRefParse(r.SchemaRef, name)
