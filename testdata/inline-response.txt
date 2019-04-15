@@ -25,6 +25,7 @@ paths:
                   name:
                     description: a string
                     type: string
+                required: ["id", "name"]
       summary: Get test data
 
 -- expect-api-params.go --

@@ -17,6 +17,7 @@ components:
       properties:
         os:
           $ref: "#/components/schemas/OS"
+      required: ["os"]
     OS:
       type: object
       properties:
@@ -57,7 +58,7 @@ type FooBody struct {
 }
 
 type OS struct {
-	X string `json:"x"`
+	X string `json:"x,omitempty"`
 }
 
 // FooRequest holds the request value for a Foo call.

@@ -35,7 +35,7 @@ type APIHandler interface {
 }
 
 type Error struct {
-	Code ErrorCode `json:"code"`
+	Code ErrorCode `json:"code,omitempty"`
 }
 
 // A code representing the kind of error.

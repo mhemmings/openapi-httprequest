@@ -19,6 +19,7 @@ components:
           items:
             $ref: "#/components/schemas/Item"
       type: object
+      required: ["body"]
     Item:
       properties:
         foo:
@@ -42,5 +43,5 @@ type GetTestDataResponse struct {
 }
 
 type Item struct {
-	Foo string `json:"foo"`
+	Foo string `json:"foo,omitempty"`
 }
