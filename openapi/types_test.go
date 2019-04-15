@@ -7,6 +7,7 @@ import (
 var typesTestTable = []struct {
 	Type     string
 	Format   string
+	Required bool
 	Expected string
 }{{
 	Type:     "integer",
@@ -52,6 +53,11 @@ var typesTestTable = []struct {
 }, {
 	Type:     "string",
 	Format:   "date-time",
+	Expected: "*time.Time",
+}, {
+	Type:     "string",
+	Format:   "date-time",
+	Required: true,
 	Expected: "time.Time",
 }, {
 	Type:     "boolean",
@@ -63,7 +69,7 @@ var typesTestTable = []struct {
 
 func TestOpenapiTypeToGo(t *testing.T) {
 	for i, test := range typesTestTable {
-		output := TypeString(test.Type, test.Format)
+		output := TypeString(test.Type, test.Format, test.Required)
 		if output != test.Expected {
 			t.Errorf(`[%d] expected: "%s", got: "%s"`, i, test.Expected, output)
 		}

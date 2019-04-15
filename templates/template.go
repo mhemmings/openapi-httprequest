@@ -50,12 +50,12 @@ func Write(template *template.Template, data TemplateArg, filepath string) error
 
 Outer:
 	for _, def := range data.Types {
-		if def.TypeStr == "time.Time" {
+		if def.TypeStr == "*time.Time" {
 			args.Imports = append(args.Imports, "time")
 			break Outer
 		}
 		for _, prop := range def.Properties {
-			if prop.TypeStr == "time.Time" {
+			if prop.TypeStr == "*time.Time" {
 				args.Imports = append(args.Imports, "time")
 				break Outer
 			}
