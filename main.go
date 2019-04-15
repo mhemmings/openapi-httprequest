@@ -114,6 +114,9 @@ func main2() error {
 				// Ignore (https://github.com/go-httprequest/httprequest/blob/2b21a94c9e788981d4e609ef4b7a21cedae6da66/type.go#L225)
 				continue
 			}
+			if op.OperationID == "" {
+				return errgo.Newf("missing operationId for path %s %s", method, path)
+			}
 			name := strcase.ToCamel(op.OperationID + "Request")
 			req := templates.Definition{
 				Name:       name,

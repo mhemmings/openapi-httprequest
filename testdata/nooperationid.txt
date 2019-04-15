@@ -1,0 +1,30 @@
+# Tests a missing operationId in a operation definition
+
+! openapi-httprequest api.yaml
+stderr 'missing operationId for path GET /test\n'
+
+-- api.yaml --
+openapi: 3.0.0
+info:
+  description: test service description
+  title: test service
+  version: 1.0.0
+paths:
+  /test:
+    get:
+      description: Get test data (description)
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTestDataResponse'
+      summary: Get test data
+components:
+  schemas:
+    GetTestDataResponse:
+      properties:
+        body:
+          description: get test data response body
+          type: string
+      type: object
