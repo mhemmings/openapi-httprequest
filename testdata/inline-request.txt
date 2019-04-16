@@ -23,7 +23,21 @@ paths:
                 test:
                   type: string
                   description: A test string
-              required: ["test"]
+                test2:
+                  type: object
+                  description: A test object - not required
+                  properties:
+                    test:
+                      type: string
+                      description: A test string
+                test3:
+                  type: object
+                  description: A test object - required
+                  properties:
+                    test:
+                      type: string
+                      description: A test string
+              required: ["test", "test3"]
       responses:
         "200":
           content:
@@ -70,4 +84,8 @@ type PostTestDataRequest struct {
 type PostTestDataRequestBody struct {
 	// A test string
 	Test string `json:"test"`
+	// A test object - not required
+	Test2 *Test2 `json:"test2,omitempty"`
+	// A test object - required
+	Test3 Test3 `json:"test3"`
 }

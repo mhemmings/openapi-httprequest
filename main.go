@@ -99,7 +99,7 @@ func main2() error {
 
 	// Build schema types
 	for schemaName, schema := range swagger.Components.Schemas {
-		s := schemaRefParse(schema, strcase.ToCamel(schemaName), false)
+		s := schemaRefParse(schema, strcase.ToCamel(schemaName))
 		arg.Types = append(arg.Types, &s)
 	}
 
@@ -139,7 +139,8 @@ func main2() error {
 
 			// Get request params
 			for _, param := range op.Parameters {
-				def := schemaRefParse(param.Value.Schema, strcase.ToCamel(param.Value.Name), true)
+				def := schemaRefParse(param.Value.Schema, strcase.ToCamel(param.Value.Name))
+				def.TypeStr = strings.TrimPrefix(def.TypeStr, "*")
 				p := templates.Definition{
 					Name:    def.Name,
 					Tag:     fmt.Sprintf("`httprequest:\"%s,%s\"`", param.Value.Name, oas.ParamLocation(param.Value.In)),
@@ -152,7 +153,8 @@ func main2() error {
 			// Get request body
 			if op.RequestBody != nil && op.RequestBody.Value.Content["application/json"] != nil {
 				if schema := op.RequestBody.Value.Content["application/json"].Schema; schema != nil {
-					def := schemaRefParse(schema, "", true)
+					def := schemaRefParse(schema, "")
+					def.TypeStr = strings.TrimPrefix(def.TypeStr, "*")
 					p := templates.Definition{
 						Name:    "Body",
 						Tag:     "`httprequest:\",body\"`",
@@ -191,7 +193,7 @@ func main2() error {
 				// method to write the appropriate response.
 				if len(response.Value.Content) == 1 {
 					if body := response.Value.Content.Get("application/json"); body != nil {
-						resp = schemaRefParse(body.Schema, "", true)
+						resp = schemaRefParse(body.Schema, "")
 						// If the response is not a referenced type and is instead defined inline,
 						// we need to build the response type.
 						if resp.Name == "" {
@@ -244,15 +246,18 @@ func main2() error {
 
 // schemaRefParse takes an openapi SchemeRef doc and creates a type Definition to be used in params.go.
 // It attempts ro recursively resolve all references.
-func schemaRefParse(oasSchema *openapi3.SchemaRef, name string, required bool) templates.Definition {
+func schemaRefParse(oasSchema *openapi3.SchemaRef, name string) templates.Definition {
 	if oasSchema.Ref != "" {
 		r := references[oasSchema.Ref]
 		// If the definition name is currently unknown, set it to the resolved one.
 		if name == "" || name == "interface{}" {
 			name = r.Name
 		}
-		def := schemaRefParse(r.SchemaRef, name, required)
+		def := schemaRefParse(r.SchemaRef, name)
 		def.TypeStr = r.Name
+		if r.SchemaRef.Value.Type == "object" {
+			def.TypeStr = "*" + def.TypeStr
+		}
 		def.DocComment = "" // Avoid duplication of comments due to references.
 		return def
 	}
@@ -268,23 +273,26 @@ func schemaRefParse(oasSchema *openapi3.SchemaRef, name string, required bool) t
 			required[name] = true
 		}
 		for propName, prop := range oasSchema.Value.Properties {
-			p := schemaRefParse(prop, strcase.ToCamel(propName), required[propName])
+			p := schemaRefParse(prop, strcase.ToCamel(propName))
 			omitempty := ",omitempty"
+			if p.TypeStr == "" {
+				p.TypeStr = "*" + p.Name
+			}
 			if required[propName] {
+				p.TypeStr = strings.TrimPrefix(p.TypeStr, "*")
 				omitempty = ""
 			}
 			p.Tag = fmt.Sprintf("`json:\"%s%s\"`", propName, omitempty)
-			if p.TypeStr == "" {
-				p.TypeStr = p.Name
-			}
 			schema.Properties = append(schema.Properties, &p)
 		}
 		sort.Sort(schema.Properties)
 	} else if oasSchema.Value.Items != nil {
-		t := schemaRefParse(oasSchema.Value.Items, oas.TypeString(oasSchema.Value.Items.Value.Type, oasSchema.Value.Items.Value.Format, required), required)
+		name := oas.TypeString(oasSchema.Value.Items.Value.Type, oasSchema.Value.Items.Value.Format)
+		name = strings.TrimPrefix(name, "*")
+		t := schemaRefParse(oasSchema.Value.Items, name)
 		schema.TypeStr = fmt.Sprintf("[]%s", t.Name)
 	} else { //native type
-		schema.TypeStr = oas.TypeString(oasSchema.Value.Type, oasSchema.Value.Format, required)
+		schema.TypeStr = oas.TypeString(oasSchema.Value.Type, oasSchema.Value.Format)
 	}
 
 	return schema
