@@ -268,7 +268,7 @@ func schemaRefParse(oasSchema *openapi3.SchemaRef, name string, required bool) t
 			required[name] = true
 		}
 		for propName, prop := range oasSchema.Value.Properties {
-			p := schemaRefParse(prop, strcase.ToCamel(propName), required[name])
+			p := schemaRefParse(prop, strcase.ToCamel(propName), required[propName])
 			omitempty := ",omitempty"
 			if required[propName] {
 				omitempty = ""
