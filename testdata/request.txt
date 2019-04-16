@@ -43,6 +43,13 @@ components:
         fieldB:
           description: post test data response body
           type: string
+        fieldC:
+          description: post test data response body - fieldC
+          type: object
+          properties:
+            test:
+              type: string
+              description: A test string
       type: object
       required: ["fieldA"]
 
@@ -65,6 +72,8 @@ type PostRequest struct {
 	FieldA string `json:"fieldA"`
 	// post test data response body
 	FieldB string `json:"fieldB,omitempty"`
+	// post test data response body - fieldC
+	FieldC *FieldC `json:"fieldC,omitempty"`
 }
 
 type PostResponse struct {
