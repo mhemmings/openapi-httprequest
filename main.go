@@ -267,6 +267,21 @@ func schemaRefParse(oasSchema *openapi3.SchemaRef, name string) templates.Defini
 		DocComment: templates.Comment(oasSchema.Value.Description),
 	}
 
+	if len(oasSchema.Value.AllOf) > 0 {
+		for _, r := range oasSchema.Value.AllOf {
+			def := schemaRefParse(r, "")
+			if def.Name != "" {
+				// embed named references
+				schema.Properties = append(schema.Properties, &templates.Definition{
+					TypeStr: strings.TrimPrefix(def.TypeStr, "*"),
+				})
+				continue
+			}
+			schema.Properties = append(schema.Properties, def.Properties...)
+		}
+		return schema
+	}
+
 	if len(oasSchema.Value.Properties) > 0 {
 		required := make(map[string]bool)
 		for _, name := range oasSchema.Value.Required {
