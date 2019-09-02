@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -265,6 +266,13 @@ func schemaRefParse(oasSchema *openapi3.SchemaRef, name string) templates.Defini
 	schema := templates.Definition{
 		Name:       name,
 		DocComment: templates.Comment(oasSchema.Value.Description),
+	}
+
+	// Check for a type specification in an extension
+	if v, ok := oasSchema.Value.Extensions["x-go-type"]; ok {
+		if err := json.Unmarshal(v.(json.RawMessage), &schema.TypeStr); err == nil {
+			return schema
+		}
 	}
 
 	if len(oasSchema.Value.Properties) > 0 {
