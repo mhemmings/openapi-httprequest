@@ -35,6 +35,7 @@ var (
 	outputDir      = gnuflag.String("outputdir", "", "The output directory to save generated server package (default: the current directory, or a temporary directory if --http is specified")
 	listenAddr     = gnuflag.String("http", "", "Implies --server. If set, the generated server will be run on the given network address (e.g. localhost:8088)")
 	packageName    = gnuflag.String("pkg", "params", "Package name to use for generated files (ignored if --server is specified)")
+	paramsFile     = gnuflag.String("o", "api-params.go", "File name to use for generated httprequest params.")
 	generateServer = gnuflag.Bool("server", false, "Generate server code (overwrites --pkg=main)")
 )
 
@@ -88,6 +89,7 @@ func main2() error {
 	arg := templates.TemplateArg{
 		GenerateServer: *generateServer,
 		Pkg:            *packageName,
+		ParamsFile:     *paramsFile,
 	}
 
 	// Build references of top level schema definitions
