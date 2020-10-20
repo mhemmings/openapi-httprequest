@@ -16,6 +16,7 @@ type TemplateArg struct {
 	Pkg            string
 	Types          DefinitionList
 	Handlers       HandlerList
+	ParamsFile     string
 	GenerateServer bool
 }
 
@@ -24,7 +25,7 @@ func WriteAll(outputDir string, args TemplateArg) error {
 	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
 		os.Mkdir(outputDir, os.ModePerm)
 	}
-	err := Write(Params, args, filepath.Join(outputDir, "api-params.go"))
+	err := Write(Params, args, filepath.Join(outputDir, args.ParamsFile))
 	if err != nil {
 		return errgo.Notef(err, "cannot write api-params.go template")
 	}
