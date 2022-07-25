@@ -55,9 +55,17 @@ Outer:
 			args.Imports = append(args.Imports, "time")
 			break Outer
 		}
+		if def.TypeStr == "json.RawMessage" || def.TypeStr == "*json.RawMessage" {
+			args.Imports = append(args.Imports, "encoding/json")
+			break Outer
+		}
 		for _, prop := range def.Properties {
 			if prop.TypeStr == "time.Time" || prop.TypeStr == "*time.Time" {
 				args.Imports = append(args.Imports, "time")
+				break Outer
+			}
+			if prop.TypeStr == "json.RawMessage" || prop.TypeStr == "*json.RawMessage" {
+				args.Imports = append(args.Imports, "encoding/json")
 				break Outer
 			}
 		}
