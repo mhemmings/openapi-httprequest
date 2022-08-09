@@ -43,15 +43,15 @@ var typesTestTable = []struct {
 	Expected: "string",
 }, {
 	Type:     "string",
-	Format:   "date",
-	Expected: "string",
-}, {
-	Type:     "string",
 	Format:   "password",
 	Expected: "string",
 }, {
 	Type:     "string",
 	Format:   "date-time",
+	Expected: "*time.Time",
+}, {
+	Type:     "string",
+	Format:   "date",
 	Expected: "*time.Time",
 }, {
 	Type:     "boolean",
