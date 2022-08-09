@@ -11,7 +11,7 @@ func TypeString(typ string, format string) string {
 	case "number":
 		return "float64"
 	case "string":
-		if format == "date-time" {
+		if format == "date-time" || format == "date" {
 			return "*time.Time"
 		}
 		return "string"
